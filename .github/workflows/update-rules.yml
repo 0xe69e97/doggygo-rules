@@ -23,9 +23,11 @@ jobs:
         run: python scripts/build.py
 
       - name: Commit and tag when something changed
+        id: commit
         run: |
           if git diff --quiet; then
             echo "上游无变化，跳过"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git config user.name  "github-actions[bot]"
@@ -37,3 +39,18 @@ jobs:
           git tag -f "$TAG"
           git push
           git push -f origin "$TAG"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      # jsDelivr 对 @main 这类分支引用有约 12 小时缓存。不主动 purge 的话，客户端在
+      # 规则刷新后仍会长时间读到上一版（实测踩到：仓库已是 v3，CDN 还在发 v2）。
+      - name: Purge jsDelivr cache
+        if: steps.commit.outputs.changed == 'true'
+        continue-on-error: true
+        run: |
+          for f in rules/*.json; do
+            name=$(basename "$f")
+            printf 'purge %s ... ' "$name"
+            curl -sS --max-time 180 \
+              "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@main/rules/${name}" \
+              -o /dev/null && echo ok || echo failed
+          done
