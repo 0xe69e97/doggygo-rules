@@ -25,6 +25,12 @@ MIRRORS = (
 FIELDS = ("domain", "domain_suffix", "domain_keyword", "domain_regex")
 IP_FIELDS = ("ip_cidr",)
 
+# sing-box rule-set source format version. Version table (sing-box docs):
+#   1 = 1.8.0 · 2 = 1.10.0 · 3 = 1.11.0 · 4 = 1.13.0 · 5 = 1.14.0
+# MetaCubeX publishes the `sing` branch at version 2, and some clients reject that
+# with "only JSON or SRS files are supported" — bump to 3 so the version gate passes.
+RULE_SET_VERSION = 3
+
 GEOIP_MIRRORS = (
     "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/{}.json",
     "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/{}.json",
@@ -91,7 +97,7 @@ def build(sources, with_hosts):
                     acc[field].append(host)
         for field in ("domain", "domain_suffix"):
             acc[field] = sorted(set(acc[field]))
-    return {"version": 2, "rules": [{k: v for k, v in acc.items() if v}]}
+    return {"version": RULE_SET_VERSION, "rules": [{k: v for k, v in acc.items() if v}]}
 
 
 def fetch_ip(name: str) -> dict:
@@ -120,7 +126,7 @@ def build_ip(sources) -> dict:
                     acc[field].extend(values)
     for field in acc:
         acc[field] = sorted(set(acc[field]))
-    return {"version": 2, "rules": [{k: v for k, v in acc.items() if v}]}
+    return {"version": RULE_SET_VERSION, "rules": [{k: v for k, v in acc.items() if v}]}
 
 
 def verify(direct: dict) -> list[str]:
