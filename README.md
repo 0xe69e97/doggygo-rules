@@ -7,7 +7,7 @@
 
 ## 远程地址
 
-把 `<USER>` / `<REPO>` （仓库：`0xe69e97/doggygo-rules`）
+远程规则地址（仓库：`0xe69e97/doggygo-rules`）。
 
 ### 推荐：jsDelivr CDN（国内可直连，有缓存加速）
 
