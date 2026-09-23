@@ -23,9 +23,23 @@ MIRRORS = (
     "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/{}.json",
 )
 FIELDS = ("domain", "domain_suffix", "domain_keyword", "domain_regex")
+IP_FIELDS = ("ip_cidr",)
+
+GEOIP_MIRRORS = (
+    "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/{}.json",
+    "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/{}.json",
+    "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geoip/{}.json",
+)
 
 # Hosts that must always resolve direct. Kept here so a rebuild never drops them.
 EXTRA_DIRECT_HOSTS = ("molin.myds.me", "smalin.myds.me")
+
+# IP-based direct rules. Needed because mobile games and RTC/voice servers are
+# addressed by raw IP handed out by a signalling server — no domain to match on,
+# so domain-only rule sets let them fall through to the proxy and break.
+GEOIP_TARGETS = {
+    "geoip-cn.json": ("cn",),
+}
 
 TARGETS = {
     # `cn` is required: geolocation-cn alone misses taobao/weibo/alipay/alibaba/alicdn/sina.
@@ -80,6 +94,35 @@ def build(sources, with_hosts):
     return {"version": 2, "rules": [{k: v for k, v in acc.items() if v}]}
 
 
+def fetch_ip(name: str) -> dict:
+    last = None
+    for tpl in GEOIP_MIRRORS:
+        url = tpl.format(name)
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=90) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+            if "rules" not in data:
+                raise ValueError("missing 'rules'")
+            return data
+        except Exception as exc:  # noqa: BLE001 - fall through to the next mirror
+            last = exc
+    raise RuntimeError(f"all mirrors failed for geoip/{name}: {last}")
+
+
+def build_ip(sources) -> dict:
+    acc = {f: [] for f in IP_FIELDS}
+    for name in sources:
+        for rule in fetch_ip(name).get("rules") or []:
+            for field in IP_FIELDS:
+                values = rule.get(field)
+                if isinstance(values, list):
+                    acc[field].extend(values)
+    for field in acc:
+        acc[field] = sorted(set(acc[field]))
+    return {"version": 2, "rules": [{k: v for k, v in acc.items() if v}]}
+
+
 def verify(direct: dict) -> list[str]:
     problems = []
     rule = direct["rules"][0]
@@ -117,6 +160,21 @@ def main() -> int:
                     print(f"  FAIL {filename}: {p}", file=sys.stderr)
                 return 1
 
+        path = RULES / filename
+        old = path.read_text(encoding="utf-8") if path.exists() else None
+        total = sum(len(v) for v in data["rules"][0].values())
+        if old != text:
+            changed = True
+            if not args.check:
+                path.write_text(text, encoding="utf-8")
+            print(f"  {'would update' if args.check else 'updated'} {filename}: {total} entries, {len(text) // 1024} KB")
+        else:
+            print(f"  unchanged {filename}: {total} entries")
+
+    for filename, sources in GEOIP_TARGETS.items():
+        data = build_ip(sources)
+        text = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
+        json.loads(text)
         path = RULES / filename
         old = path.read_text(encoding="utf-8") if path.exists() else None
         total = sum(len(v) for v in data["rules"][0].values())

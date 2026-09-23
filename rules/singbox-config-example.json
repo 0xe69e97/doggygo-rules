@@ -99,21 +99,21 @@
         "tag": "geolocation-cn",
         "type": "remote",
         "format": "source",
-        "url": "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/geolocation-cn.json",
+        "url": "https://cdn.jsdelivr.net/gh/0xe69e97/doggygo-rules@main/rules/direct-cn.json",
         "update_interval": "1d"
       },
       {
         "tag": "geolocation-!cn",
         "type": "remote",
         "format": "source",
-        "url": "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/geolocation-!cn.json",
+        "url": "https://cdn.jsdelivr.net/gh/0xe69e97/doggygo-rules@main/rules/proxy-cn.json",
         "update_interval": "1d"
       },
       {
         "tag": "category-ads-all",
         "type": "remote",
         "format": "source",
-        "url": "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-ads-all.json",
+        "url": "https://cdn.jsdelivr.net/gh/0xe69e97/doggygo-rules@main/rules/ads.json",
         "update_interval": "1d"
       },
       {
@@ -163,6 +163,14 @@
         "type": "remote",
         "format": "source",
         "url": "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/disney.json",
+        "update_interval": "1d"
+      },
+      {
+        "tag": "geoip-cn",
+        "type": "remote",
+        "format": "source",
+        "url": "https://cdn.jsdelivr.net/gh/0xe69e97/doggygo-rules@main/rules/geoip-cn.json",
+        "download_detour": "direct",
         "update_interval": "1d"
       }
     ],
@@ -233,6 +241,13 @@
         ],
         "action": "route",
         "outbound": "proxy"
+      },
+      {
+        "rule_set": [
+          "geoip-cn"
+        ],
+        "action": "route",
+        "outbound": "direct"
       }
     ],
     "final": "proxy",
