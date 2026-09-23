@@ -1,0 +1,39 @@
+name: Update rule sets
+
+on:
+  schedule:
+    # 每天 03:17 UTC = 北京时间 11:17，避开整点拥堵
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Rebuild rule sets from upstream
+        run: python scripts/build.py
+
+      - name: Commit and tag when something changed
+        run: |
+          if git diff --quiet; then
+            echo "上游无变化，跳过"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add rules/
+          git commit -m "chore: refresh rule sets from MetaCubeX/meta-rules-dat"
+          # 打时间戳 tag：jsDelivr 对 tag 的缓存策略比 branch 更可控
+          TAG="v$(date -u +%Y.%m.%d)"
+          git tag -f "$TAG"
+          git push
+          git push -f origin "$TAG"
