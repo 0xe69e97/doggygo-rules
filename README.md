@@ -7,31 +7,31 @@
 
 ## 远程地址
 
-把 `<USER>` / `<REPO>` 换成你的 GitHub 用户名和仓库名。
+把 `<USER>` / `<REPO>` （仓库：`0xe69e97/doggygo-rules`）
 
 ### 推荐：jsDelivr CDN（国内可直连，有缓存加速）
 
 ```
-https://cdn.jsdelivr.net/gh/<USER>/<REPO>@main/rules/direct-cn.json
-https://cdn.jsdelivr.net/gh/<USER>/<REPO>@main/rules/ads.json
-https://cdn.jsdelivr.net/gh/<USER>/<REPO>@main/rules/proxy-cn.json
+https://cdn.jsdelivr.net/gh/0xe69e97/doggygo-rules@main/rules/direct-cn.json
+https://cdn.jsdelivr.net/gh/0xe69e97/doggygo-rules@main/rules/ads.json
+https://cdn.jsdelivr.net/gh/0xe69e97/doggygo-rules@main/rules/proxy-cn.json
 ```
 
 备用镜像（jsDelivr 抽风时换这个）：
 
 ```
-https://fastly.jsdelivr.net/gh/<USER>/<REPO>@main/rules/direct-cn.json
+https://fastly.jsdelivr.net/gh/0xe69e97/doggygo-rules@main/rules/direct-cn.json
 ```
 
 ### GitHub 原始地址（国内常被墙，仅作最后备用）
 
 ```
-https://raw.githubusercontent.com/<USER>/<REPO>/main/rules/direct-cn.json
+https://raw.githubusercontent.com/0xe69e97/doggygo-rules/main/rules/direct-cn.json
 ```
 
 > **注意缓存**：jsDelivr 对 `@main` 这类分支引用有约 12 小时缓存。
 > 想要"改了立刻生效"，用时间戳 tag 代替 `@main`（工作流每天会打一个 `vYYYY.MM.DD` 的 tag）：
-> `https://cdn.jsdelivr.net/gh/<USER>/<REPO>@v2026.09.23/rules/direct-cn.json`
+> `https://cdn.jsdelivr.net/gh/0xe69e97/doggygo-rules@v2026.09.23/rules/direct-cn.json`
 
 ## 客户端怎么配
 
